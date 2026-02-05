@@ -1,5 +1,4 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy Doxygen Documentation
 
 on:
   push:
@@ -13,7 +12,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -25,23 +24,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1. Встановлюємо Doxygen на сервер GitHub
       - name: Install Doxygen
-        run: sudo apt-get update && sudo apt-get install -y doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
 
-      # 2. Генеруємо документацію, використовуючи файл у папці docs
       - name: Generate Documentation
         run: doxygen docs/Doxyfile
+
+      - name: Prevent Jekyll
+        run: mkdir -p docs/output/html && touch docs/output/html/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # 3. Завантажуємо папку html, яку створив Doxygen
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Якщо в Doxyfile OUTPUT_DIRECTORY = ../, то папка html буде в корені
-          path: './html'
+          path: 'docs/output/html'
 
       - name: Deploy to GitHub Pages
         id: deployment
